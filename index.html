@@ -812,30 +812,42 @@
     }
 
     function logReading() {
-      const diffData = getDiffData();
-      if (!diffData) {
-        alert('Connect both calipers and wait for live readings before logging.');
-        return;
-      }
 
-      const entry = {
-        timestamp: new Date().toISOString(),
-        caliper1: formatValue(devices[1].value, 4),
-        caliper1Unit: devices[1].unit,
-        caliper2: formatValue(devices[2].value, 4),
-        caliper2Unit: devices[2].unit,
-        difference: formatValue(diffData.diffDisplay, 4),
-        differenceUnit: toleranceUnit,
-        tolerance: formatValue(maxTolerance, 4),
-        toleranceUnit,
-        result: diffData.result,
-        level: diffData.level
-      };
+  const v1 = devices[1].value;
+  const v2 = devices[2].value;
 
-      logEntries.unshift(entry);
-      persistLog();
-      renderLog();
-    }
+  if (v1 == null && v2 == null) {
+    alert("No caliper data to log.");
+    return;
+  }
+
+  let diff = null;
+  let result = "N/A";
+
+  if (v1 != null && v2 != null) {
+    diff = v1 - v2;
+
+    const absDiff = Math.abs(diff);
+
+    if (absDiff <= maxTolerance) result = "IN SPEC";
+    else if (absDiff <= maxTolerance * 2) result = "WARNING";
+    else result = "FAIL";
+  }
+
+  const entry = {
+    timestamp: new Date().toISOString(),
+    caliper1: v1,
+    caliper2: v2,
+    difference: diff,
+    tolerance: maxTolerance,
+    result: result
+  };
+
+  logEntries.unshift(entry);
+
+  persistLog();
+  renderLog();
+}
 
     function renderLog() {
       const body = document.getElementById('logBody');
