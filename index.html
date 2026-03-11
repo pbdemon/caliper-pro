@@ -1,92 +1,942 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caliper Pro</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#667eea">
-<link rel="apple-touch-icon" href="icon-192.png">
-<style>
-body{font-family:Arial,Helvetica,sans-serif;margin:0;background:linear-gradient(135deg,#667eea,#764ba2);color:#222}
-.container{max-width:900px;margin:auto;padding:20px}
-.card{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 10px 25px rgba(0,0,0,0.2)}
-.title{font-weight:bold;font-size:22px;margin-bottom:10px}
-.value{font-size:48px;font-weight:bold;text-align:center}
-.btn{padding:12px 16px;border:none;border-radius:10px;background:#667eea;color:white;font-weight:bold;cursor:pointer}
-.status{margin-bottom:10px;font-weight:bold}
-.diff{font-size:56px;text-align:center;font-weight:bold}
-.pass{color:#16a34a}
-.warn{color:#ea580c}
-.fail{color:#dc2626}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Caliper Pro</title>
+  <meta name="theme-color" content="#667eea" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <style>
+    :root {
+      --bg1: #667eea;
+      --bg2: #764ba2;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --text: #1f2937;
+      --line: #e5e7eb;
+      --pass-bg: #dcfce7;
+      --pass-text: #166534;
+      --warn-bg: #ffedd5;
+      --warn-text: #c2410c;
+      --fail-bg: #fee2e2;
+      --fail-text: #b91c1c;
+      --neutral-bg: #eef2ff;
+      --neutral-text: #4338ca;
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      min-height: 100%;
+    }
+
+    body {
+      padding: 16px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      color: white;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .topbar p {
+      margin: 6px 0 0;
+      opacity: 0.92;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cards-2 {
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 860px) {
+      .cards-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .title {
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .chip {
+      min-width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+
+    .status {
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .status.connected {
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .status.disconnected {
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+
+    .display {
+      background: linear-gradient(135deg, #f8fafc 0%, #dbeafe 100%);
+      border-radius: 18px;
+      padding: 22px 12px;
+      text-align: center;
+      margin-bottom: 14px;
+      border: 1px solid rgba(102, 126, 234, 0.12);
+    }
+
+    .value {
+      font-size: clamp(42px, 8vw, 64px);
+      line-height: 0.95;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+    }
+
+    .unit {
+      margin-top: 8px;
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .info-box {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: center;
+      min-height: 78px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .small-value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:active { transform: scale(0.985); }
+    .btn:disabled { opacity: 0.65; cursor: wait; }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.28);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .btn-danger {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .result-card {
+      text-align: center;
+    }
+
+    .diff-value {
+      font-size: clamp(42px, 9vw, 72px);
+      line-height: 0.95;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      color: var(--neutral-text);
+    }
+
+    .diff-label {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .badge {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .badge.neutral { background: var(--neutral-bg); color: var(--neutral-text); }
+    .badge.pass { background: var(--pass-bg); color: var(--pass-text); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge.fail { background: var(--fail-bg); color: var(--fail-text); }
+
+    .section {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+
+    .section h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #d1d5db;
+      padding: 11px 12px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .legend {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .legend div {
+      color: white;
+      border-radius: 10px;
+      padding: 8px 6px;
+      font-weight: 800;
+    }
+
+    .legend .g { background: #22c55e; }
+    .legend .o { background: #f59e0b; }
+    .legend .r { background: #ef4444; }
+
+    .meta-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meta-box {
+      background: #eef2ff;
+      color: #3730a3;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 700;
+    }
+
+    .meta-box small {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+    .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+
+    .footnote {
+      margin-top: 10px;
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+
+    @media (max-width: 520px) {
+      .actions, .field-grid, .meta-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .legend {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
+  <div class="app">
+    <div class="topbar">
+      <h1>📏 Caliper Pro</h1>
+      <p>Installable dual BLE caliper monitor with tolerance, logging, and CSV export</p>
+    </div>
 
-<div class="card">
-<div class="title">Caliper 1</div>
-<div id="status1" class="status">Disconnected</div>
-<div id="value1" class="value">--</div>
-<button class="btn" onclick="connectCaliper(1)">Connect</button>
-</div>
+    <div class="grid cards-2">
+      <section class="card">
+        <div class="card-header">
+          <div class="title">Caliper 1</div>
+          <div class="chip">1</div>
+        </div>
+        <div class="status disconnected" id="status1">⚫ Disconnected</div>
+        <div class="display">
+          <div class="value" id="value1">--</div>
+          <div class="unit" id="unit1">mm</div>
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="label">Count</div>
+            <div class="small-value" id="count1">0</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="connectBtn1" onclick="connectCaliper(1)">Connect 1</button>
+          <button class="btn btn-secondary" onclick="zeroSingle(1)">Zero 1</button>
+        </div>
+      </section>
 
-<div class="card">
-<div class="title">Caliper 2</div>
-<div id="status2" class="status">Disconnected</div>
-<div id="value2" class="value">--</div>
-<button class="btn" onclick="connectCaliper(2)">Connect</button>
-</div>
+      <section class="card">
+        <div class="card-header">
+          <div class="title">Caliper 2</div>
+          <div class="chip">2</div>
+        </div>
+        <div class="status disconnected" id="status2">⚫ Disconnected</div>
+        <div class="display">
+          <div class="value" id="value2">--</div>
+          <div class="unit" id="unit2">mm</div>
+        </div>
+        <div class="info-grid">
+          <div class="info-box">
+            <div class="label">Count</div>
+            <div class="small-value" id="count2">0</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="connectBtn2" onclick="connectCaliper(2)">Connect 2</button>
+          <button class="btn btn-secondary" onclick="zeroSingle(2)">Zero 2</button>
+        </div>
+      </section>
+    </div>
 
-<div class="card">
-<div class="title">Difference</div>
-<div id="difference" class="diff">--</div>
-</div>
+    <section class="card result-card" style="margin-top:16px;" id="resultCard">
+      <div class="title">Difference</div>
+      <div class="diff-value" id="difference">--</div>
+      <div class="diff-label" id="differenceLabel">Caliper 1 - Caliper 2</div>
+      <div class="badge neutral" id="resultBadge">WAITING</div>
 
-</div>
+      <div class="meta-grid">
+        <div class="meta-box">
+          <small>Current Tolerance</small>
+          <span id="toleranceDisplay">±0.005 inches</span>
+        </div>
+        <div class="meta-box">
+          <small>Difference Offset</small>
+          <span id="offsetDisplay">0.0000 inches</span>
+        </div>
+      </div>
 
-<script>
-const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
-const CHARACTERISTIC_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+      <div class="section">
+        <h3>Tolerance & Device Settings</h3>
+        <div class="field-grid">
+          <div class="field">
+            <label for="toleranceInput">Max Difference (±)</label>
+            <input id="toleranceInput" type="number" min="0" step="0.001" value="0.005" onchange="updateTolerance()" />
+          </div>
+          <div class="field">
+            <label for="toleranceUnit">Tolerance Unit</label>
+            <select id="toleranceUnit" onchange="updateTolerance()">
+              <option value="mm">mm</option>
+              <option value="inches" selected>inches</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="namePrefixInput">BLE Name Prefix</label>
+            <input id="namePrefixInput" type="text" value="Caliper" onchange="saveSettings()" />
+          </div>
+          <div class="field">
+            <label for="autoReconnectToggle">Auto Reconnect Hint</label>
+            <select id="autoReconnectToggle" onchange="saveSettings()">
+              <option value="off">Off</option>
+              <option value="on">On</option>
+            </select>
+          </div>
+        </div>
 
-let devices={1:{value:null,unit:null},2:{value:null,unit:null}};
+        <div class="legend">
+          <div class="g">✓ IN SPEC</div>
+          <div class="o">⚠ WARNING</div>
+          <div class="r">✗ OUT OF SPEC</div>
+        </div>
 
-async function connectCaliper(num){
- try{
-  const device = await navigator.bluetooth.requestDevice({
-   acceptAllDevices:true,
-   optionalServices:[SERVICE_UUID]
-  });
+        <div class="actions" style="margin-top:12px;">
+          <button class="btn btn-secondary" onclick="zeroDifference()">Zero Diff</button>
+          <button class="btn btn-secondary" onclick="clearDiffZero()">Clear Diff Zero</button>
+          <button class="btn btn-primary" onclick="logReading()">Log Reading</button>
+          <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+        </div>
+      </div>
+    </section>
 
-  const server = await device.gatt.connect();
-  const service = await server.getPrimaryService(SERVICE_UUID);
-  const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+    <section class="card" style="margin-top:16px;">
+      <div class="log-header">
+        <div>
+          <div class="title">Measurement Log</div>
+          <div style="color:var(--muted); font-size:14px; margin-top:4px;">Saved locally in this browser session and local storage.</div>
+        </div>
+      </div>
 
-  await characteristic.startNotifications();
-  characteristic.addEventListener('characteristicvaluechanged',(event)=>{
-    const value=new TextDecoder().decode(event.target.value);
-    const data=JSON.parse(value);
-    devices[num].value=data.value;
-    devices[num].unit=data.unit;
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Caliper 1</th>
+              <th>Caliper 2</th>
+              <th>Difference</th>
+              <th>Tolerance</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="logBody">
+            <tr><td colspan="6" style="text-align:center; color:#6b7280;">No readings logged yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
+      </div>
+    </section>
 
-    document.getElementById("value"+num).textContent=data.value.toFixed(3);
-    updateDifference();
-  });
+    <div class="footnote">
+      Best used as a standalone HTTPS page or installed PWA. Update <span class="mono">SERVICE_UUID</span> and <span class="mono">CHARACTERISTIC_UUID</span> to match your firmware.
+    </div>
+  </div>
 
-  document.getElementById("status"+num).textContent="Connected";
+  <script>
+    const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+    const CHARACTERISTIC_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8';
+    const STORAGE_KEY = 'caliper-pro-log-v1';
+    const SETTINGS_KEY = 'caliper-pro-settings-v1';
 
- }catch(err){
-  alert(err.message);
- }
-}
+    const devices = {
+      1: { device: null, characteristic: null, value: null, unit: null, count: 0, zeroOffsetMm: 0 },
+      2: { device: null, characteristic: null, value: null, unit: null, count: 0, zeroOffsetMm: 0 }
+    };
 
-function updateDifference(){
- if(devices[1].value==null||devices[2].value==null)return;
- const diff=devices[1].value-devices[2].value;
- const el=document.getElementById("difference");
- el.textContent=diff.toFixed(4);
-}
-</script>
+    let maxTolerance = 0.005;
+    let toleranceUnit = 'inches';
+    let diffOffsetMm = 0;
+    let logEntries = [];
+
+    function isConnected(num) {
+      return !!(devices[num].device && devices[num].device.gatt && devices[num].device.gatt.connected);
+    }
+
+    function toMm(value, unit) {
+      if (value == null || !Number.isFinite(Number(value))) return null;
+      if (unit === 'mm') return Number(value);
+      if (unit === 'inches' || unit === 'inch' || unit === 'in') return Number(value) * 25.4;
+      return Number(value);
+    }
+
+    function fromMm(valueMm, unit) {
+      if (valueMm == null || !Number.isFinite(Number(valueMm))) return null;
+      if (unit === 'mm') return Number(valueMm);
+      if (unit === 'inches' || unit === 'inch' || unit === 'in') return Number(valueMm) / 25.4;
+      return Number(valueMm);
+    }
+
+    function formatValue(value, digits = 4) {
+      return Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : '--';
+    }
+
+    function updateStatus(num, connected) {
+      const status = document.getElementById(`status${num}`);
+      const btn = document.getElementById(`connectBtn${num}`);
+      if (connected) {
+        status.textContent = '🟢 Connected';
+        status.className = 'status connected';
+        btn.textContent = `Disconnect ${num}`;
+        btn.className = 'btn btn-danger';
+        btn.disabled = false;
+      } else {
+        status.textContent = '⚫ Disconnected';
+        status.className = 'status disconnected';
+        btn.textContent = `Connect ${num}`;
+        btn.className = 'btn btn-primary';
+        btn.disabled = false;
+        document.getElementById(`value${num}`).textContent = '--';
+        document.getElementById(`unit${num}`).textContent = 'mm';
+        document.getElementById(`count${num}`).textContent = '0';
+        devices[num].value = null;
+        devices[num].unit = null;
+        devices[num].count = 0;
+        updateDifference();
+      }
+    }
+
+    async function connectCaliper(num) {
+      const btn = document.getElementById(`connectBtn${num}`);
+      try {
+        if (!navigator.bluetooth) {
+          alert('Web Bluetooth is not supported in this browser.');
+          return;
+        }
+
+        if (isConnected(num)) {
+          devices[num].device.gatt.disconnect();
+          return;
+        }
+
+        btn.textContent = 'Connecting...';
+        btn.disabled = true;
+
+        const prefix = document.getElementById('namePrefixInput').value.trim() || 'Caliper';
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: prefix }],
+          optionalServices: [SERVICE_UUID]
+        });
+
+        await wait(120);
+        const server = await device.gatt.connect();
+        await wait(150);
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', (event) => handleNotification(num, event));
+
+        device.addEventListener('gattserverdisconnected', () => {
+          devices[num].device = null;
+          devices[num].characteristic = null;
+          updateStatus(num, false);
+        });
+
+        devices[num].device = device;
+        devices[num].characteristic = characteristic;
+        updateStatus(num, true);
+      } catch (error) {
+        console.error(`Caliper ${num} error:`, error);
+        alert(`Failed to connect to Caliper ${num}: ${error.message}`);
+        updateStatus(num, false);
+      }
+    }
+
+    function handleNotification(num, event) {
+      try {
+        const raw = new TextDecoder().decode(event.target.value);
+        const data = JSON.parse(raw);
+        const rawValue = typeof data.value === 'number' ? data.value : parseFloat(data.value);
+        const unit = data.unit || 'mm';
+        const valueMm = toMm(rawValue, unit);
+        if (valueMm == null) return;
+
+        const correctedMm = valueMm - devices[num].zeroOffsetMm;
+        const correctedDisplay = fromMm(correctedMm, unit);
+
+        devices[num].value = correctedDisplay;
+        devices[num].unit = unit;
+        devices[num].count = Number(data.count || 0);
+
+        document.getElementById(`value${num}`).textContent = formatValue(correctedDisplay, 4);
+        document.getElementById(`unit${num}`).textContent = unit;
+        document.getElementById(`count${num}`).textContent = devices[num].count;
+        updateDifference();
+      } catch (error) {
+        console.error(`Caliper ${num} parse error:`, error);
+      }
+    }
+
+    function getDiffData() {
+      const v1mm = toMm(devices[1].value, devices[1].unit);
+      const v2mm = toMm(devices[2].value, devices[2].unit);
+      if (v1mm == null || v2mm == null) return null;
+      const rawDiffMm = v1mm - v2mm;
+      const correctedDiffMm = rawDiffMm - diffOffsetMm;
+      const diffDisplay = fromMm(correctedDiffMm, toleranceUnit);
+      const absDiffDisplay = Math.abs(diffDisplay);
+      let result = 'WAITING';
+      let level = 'neutral';
+      if (absDiffDisplay <= maxTolerance) {
+        result = 'IN SPEC';
+        level = 'pass';
+      } else if (absDiffDisplay <= maxTolerance * 2) {
+        result = 'WARNING';
+        level = 'warn';
+      } else {
+        result = 'OUT OF SPEC';
+        level = 'fail';
+      }
+      return { rawDiffMm, correctedDiffMm, diffDisplay, absDiffDisplay, result, level };
+    }
+
+    function updateDifference() {
+      const diffDiv = document.getElementById('difference');
+      const label = document.getElementById('differenceLabel');
+      const badge = document.getElementById('resultBadge');
+      const resultCard = document.getElementById('resultCard');
+      const diffData = getDiffData();
+
+      document.getElementById('toleranceDisplay').textContent = `±${formatValue(maxTolerance, 4)} ${toleranceUnit}`;
+      document.getElementById('offsetDisplay').textContent = `${formatValue(fromMm(diffOffsetMm, toleranceUnit), 4)} ${toleranceUnit}`;
+
+      if (!diffData) {
+        diffDiv.textContent = '--';
+        diffDiv.style.color = 'var(--neutral-text)';
+        label.textContent = `Caliper 1 - Caliper 2 (${toleranceUnit})`;
+        badge.textContent = 'WAITING';
+        badge.className = 'badge neutral';
+        resultCard.style.outline = 'none';
+        return;
+      }
+
+      diffDiv.textContent = formatValue(diffData.diffDisplay, 4);
+      label.textContent = `Caliper 1 - Caliper 2 (${toleranceUnit})`;
+      badge.textContent = diffData.result;
+      badge.className = `badge ${diffData.level}`;
+
+      if (diffData.level === 'pass') {
+        diffDiv.style.color = '#16a34a';
+        resultCard.style.outline = '3px solid rgba(34,197,94,0.22)';
+      } else if (diffData.level === 'warn') {
+        diffDiv.style.color = '#ea580c';
+        resultCard.style.outline = '3px solid rgba(245,158,11,0.24)';
+        triggerAlert('warning');
+      } else {
+        diffDiv.style.color = '#dc2626';
+        resultCard.style.outline = '3px solid rgba(239,68,68,0.24)';
+        triggerAlert('fail');
+      }
+    }
+
+    function triggerAlert(level) {
+      if (!('vibrate' in navigator)) return;
+      if (level === 'warning') navigator.vibrate([100]);
+      if (level === 'fail') navigator.vibrate([180, 100, 180]);
+    }
+
+    function zeroSingle(num) {
+      const valueMm = toMm(devices[num].value, devices[num].unit);
+      if (valueMm == null) {
+        alert(`Caliper ${num} needs a live reading before zeroing.`);
+        return;
+      }
+      devices[num].zeroOffsetMm += valueMm;
+      devices[num].value = 0;
+      document.getElementById(`value${num}`).textContent = '0.0000';
+      updateDifference();
+    }
+
+    function zeroDifference() {
+      const diffData = getDiffData();
+      if (!diffData) {
+        alert('Both calipers need live readings before zeroing the difference.');
+        return;
+      }
+      diffOffsetMm += diffData.correctedDiffMm;
+      updateDifference();
+    }
+
+    function clearDiffZero() {
+      diffOffsetMm = 0;
+      updateDifference();
+    }
+
+    function updateTolerance() {
+      const input = document.getElementById('toleranceInput');
+      const unit = document.getElementById('toleranceUnit');
+      const parsed = parseFloat(input.value);
+      maxTolerance = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0.005;
+      toleranceUnit = unit.value;
+      input.value = maxTolerance.toFixed(3);
+      saveSettings();
+      updateDifference();
+    }
+
+    function logReading() {
+      const diffData = getDiffData();
+      if (!diffData) {
+        alert('Connect both calipers and wait for live readings before logging.');
+        return;
+      }
+
+      const entry = {
+        timestamp: new Date().toISOString(),
+        caliper1: formatValue(devices[1].value, 4),
+        caliper1Unit: devices[1].unit,
+        caliper2: formatValue(devices[2].value, 4),
+        caliper2Unit: devices[2].unit,
+        difference: formatValue(diffData.diffDisplay, 4),
+        differenceUnit: toleranceUnit,
+        tolerance: formatValue(maxTolerance, 4),
+        toleranceUnit,
+        result: diffData.result,
+        level: diffData.level
+      };
+
+      logEntries.unshift(entry);
+      persistLog();
+      renderLog();
+    }
+
+    function renderLog() {
+      const body = document.getElementById('logBody');
+      if (!logEntries.length) {
+        body.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#6b7280;">No readings logged yet.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = logEntries.map(entry => {
+        const pillClass = entry.level === 'pass' ? 'pass' : entry.level === 'warn' ? 'warn' : 'fail';
+        const timestamp = new Date(entry.timestamp).toLocaleString();
+        return `
+          <tr>
+            <td>${timestamp}</td>
+            <td>${entry.caliper1} ${entry.caliper1Unit}</td>
+            <td>${entry.caliper2} ${entry.caliper2Unit}</td>
+            <td>${entry.difference} ${entry.differenceUnit}</td>
+            <td>±${entry.tolerance} ${entry.toleranceUnit}</td>
+            <td><span class="pill ${pillClass}">${entry.result}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportCSV() {
+      if (!logEntries.length) {
+        alert('No log entries to export yet.');
+        return;
+      }
+      const headers = ['timestamp', 'caliper1', 'caliper1Unit', 'caliper2', 'caliper2Unit', 'difference', 'differenceUnit', 'tolerance', 'toleranceUnit', 'result'];
+      const rows = logEntries.map(entry => headers.map(key => `"${String(entry[key] ?? '').replaceAll('"', '""')}"`).join(','));
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'caliper_pro_log.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearLog() {
+      if (!confirm('Clear all logged readings?')) return;
+      logEntries = [];
+      persistLog();
+      renderLog();
+    }
+
+    function persistLog() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logEntries));
+    }
+
+    function loadLog() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if (Array.isArray(saved)) logEntries = saved;
+      } catch (e) {
+        console.warn('Failed to load saved log', e);
+      }
+    }
+
+    function saveSettings() {
+      const settings = {
+        maxTolerance,
+        toleranceUnit,
+        namePrefix: document.getElementById('namePrefixInput').value,
+        autoReconnect: document.getElementById('autoReconnectToggle').value
+      };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    function loadSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        if (Number.isFinite(saved.maxTolerance)) maxTolerance = saved.maxTolerance;
+        if (saved.toleranceUnit === 'mm' || saved.toleranceUnit === 'inches') toleranceUnit = saved.toleranceUnit;
+        document.getElementById('toleranceInput').value = maxTolerance;
+        document.getElementById('toleranceUnit').value = toleranceUnit;
+        if (typeof saved.namePrefix === 'string') document.getElementById('namePrefixInput').value = saved.namePrefix;
+        if (saved.autoReconnect === 'on' || saved.autoReconnect === 'off') document.getElementById('autoReconnectToggle').value = saved.autoReconnect;
+      } catch (e) {
+        console.warn('Failed to load settings', e);
+      }
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function checkBluetoothSupport() {
+      if (navigator.bluetooth) return;
+      alert('Web Bluetooth is not supported in this browser. Use a supported browser and host this page over HTTPS.');
+    }
+
+    loadSettings();
+    loadLog();
+    renderLog();
+    updateTolerance();
+    updateStatus(1, false);
+    updateStatus(2, false);
+    checkBluetoothSupport();
+  </script>
 </body>
 </html>
